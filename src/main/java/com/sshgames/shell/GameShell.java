@@ -8,10 +8,14 @@ import org.apache.sshd.server.Signal;
 import org.apache.sshd.server.SignalListener;
 import org.apache.sshd.server.command.Command;
 
+import com.sshgames.display.Display;
+import com.sshgames.display.impl.CenteredDisplay;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 
 public class GameShell implements Command, Runnable, SignalListener {
@@ -23,6 +27,9 @@ public class GameShell implements Command, Runnable, SignalListener {
     private OutputStream out;
 
     private Thread inputReadThread;
+
+    private PrintWriter writer;
+    private Display display;
 
     public GameShell(ChannelSession session) {
 
@@ -63,6 +70,21 @@ public class GameShell implements Command, Runnable, SignalListener {
         }
     }
 
+    // public Environment getEnvironment() {
+
+    //     return this.env;
+    // }
+
+    public int getLinesCount() {
+
+        return Integer.parseInt(this.env.getEnv().get(Environment.ENV_LINES));
+    }
+
+    public int getColumnCount() {
+
+        return Integer.parseInt(this.env.getEnv().get(Environment.ENV_COLUMNS));
+    }
+
     @Override
     public void destroy(ChannelSession channel) throws Exception {
 
@@ -94,19 +116,46 @@ public class GameShell implements Command, Runnable, SignalListener {
     @Override
     public void run() {
         
-        while (!this.session.isClosed() && !this.session.isClosing()) {
+        this.writer = new PrintWriter(this.out, true);
+        this.display = new CenteredDisplay(this);
+
+        // long timestamp = System.nanoTime();
+        // long cpt = 0;
+
+        while (!this.session.isClosing() && !this.session.isClosed()) {
 
             try {
-            
-                System.out.println(this.env.getEnv().get(Environment.ENV_LINES) + " " + this.env.getEnv().get(Environment.ENV_COLUMNS));
 
-                InputStreamReader inReader = new InputStreamReader(this.in);
-                int input = inReader.read();
-                System.out.println(input);
+                // cpt++;
 
-                if (input == 3) {
+                long timestamp = System.currentTimeMillis();
 
-                    this.destroy(this.session);
+                this.writer.println(this.display.getScreen().replace("\n", Display.LINE_BREAK));
+                this.writer.flush();
+                // System.out.println((cpt/(double)(System.nanoTime()-timestamp))*1000000000);
+
+                // for (String str : this.display.getScreen().split("\n")) {
+
+                //     this.writer.println(str);
+                //     this.writer.flush();
+                // }
+
+                // InputStreamReader inReader = new InputStreamReader(this.in);
+                // int input = inReader.read();
+                // System.out.println(input);
+
+                // if (input == 3) {
+
+                //     this.destroy(this.session);
+                // }
+
+                try {
+
+                    Thread.sleep((1000/60) - (System.currentTimeMillis() - timestamp));
+                } 
+                catch (Exception e) {
+
+
                 }
             } 
             catch (Exception e) {}

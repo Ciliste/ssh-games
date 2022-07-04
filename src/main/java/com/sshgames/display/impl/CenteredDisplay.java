@@ -3,6 +3,7 @@ package com.sshgames.display.impl;
 import com.sshgames.display.Display;
 import com.sshgames.shell.GameShell;
 import com.sshgames.tab.Tab;
+import com.sshgames.tab.impl.LoginTab;
 
 public class CenteredDisplay implements Display {
 
@@ -13,15 +14,43 @@ public class CenteredDisplay implements Display {
 
     public CenteredDisplay(GameShell shell) {
 
+        this.currentTab = new LoginTab();
+        
         this.shell = shell;
     }
 
     @Override
     public String getScreen() {
         
-        String tab = this.currentTab.getScreen();
+        // On récupère l'onglet
+        String tab = this.currentTab.getScreen(), sRet = "";
 
-        return null;
+        // On récupère les dimensions du Shell et de l'onglet
+        int shellLines = this.shell.getLinesCount(), shellColumns = this.shell.getColumnCount();
+        int tabLines = this.currentTab.getScreen().split("\n").length, tabColumns = this.currentTab.getScreen().split("\n")[0].length();
+
+        for (int cpt = 0; cpt < (shellLines/2) - (tabLines/2); cpt++) {
+
+            sRet += "\n";
+        }
+
+        String indent = "";
+        for (int cpt = 0; cpt < (shellColumns/2) - (tabColumns/2); cpt++) {
+
+            indent += " ";
+        }
+
+        for (String line : tab.split("\n")) {
+
+            sRet += indent + line + "\n";
+        }
+
+        for (int cpt = 0; cpt < (shellLines/2) - (tabLines/2); cpt++) {
+
+            sRet += "\n";
+        }
+
+        return sRet;
     }
 
     @Override

@@ -7,6 +7,8 @@ import com.sshgames.tab.Tab;
 */
 public interface Display {
 
+    public static final String LINE_BREAK = System.getProperty("line.separator");
+
     /**
      * Fournit la String qui va finir sur le terminal du Client
      * 
