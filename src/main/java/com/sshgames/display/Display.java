@@ -1,11 +1,12 @@
 package com.sshgames.display;
 
+import com.sshgames.shell.WindowListener;
 import com.sshgames.tab.Tab;
 
 /* 
  * Interface principale d'affichage
 */
-public interface Display {
+public interface Display extends WindowListener {
 
     public static final String LINE_BREAK = System.getProperty("line.separator");
 
@@ -21,5 +22,5 @@ public interface Display {
      * 
      * @param tab l'onglet sur lequel changer
      */
-    public abstract void changeTab(Tab tab); 
+    public abstract void addTab(Tab tab); 
 }

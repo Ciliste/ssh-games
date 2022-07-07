@@ -40,7 +40,7 @@ public class SSHGames {
     public static void main(String[] args) {
 
         SshServer sshd = SshServer.setUpDefaultServer();
-        sshd.setPort(6969);
+        sshd.setPort(22);
         sshd.setHost("localhost");
         
         sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(Paths.get("hostkey.ser")));

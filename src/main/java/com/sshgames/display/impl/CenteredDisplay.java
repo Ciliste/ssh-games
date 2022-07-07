@@ -50,12 +50,20 @@ public class CenteredDisplay implements Display {
             sRet += "\n";
         }
 
+
+
         return sRet;
     }
 
     @Override
-    public void changeTab(Tab tab) {
+    public void addTab(Tab tab) {
         
         this.currentTab = tab;      
+    }
+
+    @Override
+    public void windowResized(int rows, int columns) {
+        // TODO Auto-generated method stub
+        
     }
 }

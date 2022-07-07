@@ -10,6 +10,7 @@ import org.apache.sshd.server.command.Command;
 
 import com.sshgames.display.Display;
 import com.sshgames.display.impl.CenteredDisplay;
+import com.sshgames.display.impl.DisplayImpl;
 
 import java.io.*;
 import java.net.Socket;
@@ -18,7 +19,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 
-public class GameShell implements Command, Runnable, SignalListener {
+public class GameShell implements Command, Runnable {
 
     private ChannelSession session;
     private Environment env;
@@ -27,6 +28,7 @@ public class GameShell implements Command, Runnable, SignalListener {
     private OutputStream out;
 
     private Thread inputReadThread;
+    private WindowThread windowThread;
 
     private PrintWriter writer;
     private Display display;
@@ -46,7 +48,6 @@ public class GameShell implements Command, Runnable, SignalListener {
         System.out.println(env.getEnv().get(Environment.ENV_TERM));
         System.out.println(env.getEnv().get(Environment.ENV_USER));
 
-        env.addSignalListener(this);
         this.env = env;
 
         new PrintWriter(this.out, true).println("Bienvenue " + env.getEnv().get(Environment.ENV_USER));
@@ -54,8 +55,6 @@ public class GameShell implements Command, Runnable, SignalListener {
         this.inputReadThread.start();
 
         this.session = channel;
-
-        System.out.println(channel.getServerSession().getLocalAddress());
 
         try {
             
@@ -117,10 +116,16 @@ public class GameShell implements Command, Runnable, SignalListener {
     public void run() {
         
         this.writer = new PrintWriter(this.out, true);
-        this.display = new CenteredDisplay(this);
+        this.display = new DisplayImpl(this);
+
+        this.windowThread = new WindowThread(this.env);
+        this.windowThread.addWindowListener(this.display);
+        this.windowThread.start();
 
         // long timestamp = System.nanoTime();
         // long cpt = 0;
+
+        String lastStr = "";
 
         while (!this.session.isClosing() && !this.session.isClosed()) {
 
@@ -130,7 +135,13 @@ public class GameShell implements Command, Runnable, SignalListener {
 
                 long timestamp = System.currentTimeMillis();
 
-                this.writer.println(this.display.getScreen().replace("\n", Display.LINE_BREAK));
+                for (int cpt = 0; cpt < lastStr.length(); cpt++) {
+
+                    this.writer.print("\b");
+                }
+                lastStr = this.display.getScreen().replace("\n", Display.LINE_BREAK);
+
+                this.writer.println(lastStr);
                 this.writer.flush();
                 // System.out.println((cpt/(double)(System.nanoTime()-timestamp))*1000000000);
 
@@ -166,11 +177,5 @@ public class GameShell implements Command, Runnable, SignalListener {
     public void setExitCallback(ExitCallback callback) {
         
         System.out.println("GameShellFactory.GameShell.setExitCallback(ExitCallback callback)");
-    }
-
-    @Override
-    public void signal(Channel channel, Signal signal) {
-        
-        System.out.println(channel + " " + signal);
     }
 }
